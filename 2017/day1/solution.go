@@ -27,7 +27,7 @@ func main() {
 		}
 	}
 
-	fmt.Println("Part1:", part1)
-	fmt.Println("Part2:", part2)
+	fmt.Println("Part 1:", part1)
+	fmt.Println("Part 2:", part2)
 }
 
