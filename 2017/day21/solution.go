@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strings"
 )
@@ -24,7 +25,7 @@ func flip(input string) string {
 	return strings.Join(rows, "/")
 }
 
-func split(input string) ([][][]string, int) {
+func split(input string) [][]string {
 	rows := strings.Split(input, "/")
 	size := len(rows[0])
 	width := 3
@@ -32,45 +33,43 @@ func split(input string) ([][][]string, int) {
 		width = 2
 	}
 
-	count := size/width
-	inputs := make([][][]string, count)
-	for col := 0; col < count; col++ {
-		inputs[col] = make([][]string, count)
-	}
+	count := size / width
+	inputs := make([][]string, count*count)
 
 	for split := 0; split < count*count; split++ {
 		row := split / count
 		col := split % count
-		for i := row*width; i < (row+1)*width; i++ {
-			inputs[row][col] = append(inputs[row][col], rows[i][col*width:(col+1)*width])
+		for i := row * width; i < (row+1)*width; i++ {
+			inputs[split] = append(inputs[split], rows[i][col*width:(col+1)*width])
 		}
 	}
 
-	return inputs, count
+	return inputs
 }
 
-func combine(inputs [][][]string, count int) string {
-	width := len(inputs[0][0])
-	var output string
+func combine(input [][]string) string {
+	count := int(math.Sqrt(float64(len(input))))
+	width := len(input[0])
 
-	for col := 0; col < count; col++ {
-		for row := 0; row < width; row++ {
-			for layer := 0; layer < count; layer++ {
-				output += inputs[col][layer][row]
-			}
-			output += "/"
+	for section := 0; section < count; section++ {
+		for offset := 1; offset < count; offset++ {
+			input[section] = append(input[section], input[section+count*offset]...)
 		}
 	}
 
-	return output[:len(output)-1]
+	for row := 0; row < count*width; row++ {
+		for section := 1; section < count; section++ {
+			input[0][row] += input[section][row]
+		}
+	}
+
+	return strings.Join(input[0], "/")
 }
 
-func transform(inputs [][][]string, rules map[string]string) {
-	for rowIndex, row := range inputs {
-		for colIndex, col := range row {
-			output := rules[strings.Join(col, "/")]
-			inputs[rowIndex][colIndex] = strings.Split(output, "/")
-		}
+func transform(inputs [][]string, rules map[string]string) {
+	for index, section := range inputs {
+		output := rules[strings.Join(section, "/")]
+		inputs[index] = strings.Split(output, "/")
 	}
 }
 
@@ -98,19 +97,18 @@ func main() {
 	input := ".#./..#/###"
 
 	for i := 0; i < 5; i++ {
-		inputs, count := split(input)
+		inputs := split(input)
 		transform(inputs, rules)
-		input = combine(inputs, count)
+		input = combine(inputs)
 	}
 
 	fmt.Println("Part 1:", strings.Count(input, "#"))
 
 	for i := 0; i < 13; i++ {
-                inputs, count := split(input)
-                transform(inputs, rules)
-                input = combine(inputs, count)
-		fmt.Println(i+5)
-        }
+		inputs := split(input)
+		transform(inputs, rules)
+		input = combine(inputs)
+	}
 
-        fmt.Println("Part 2:", strings.Count(input, "#"))
+	fmt.Println("Part 2:", strings.Count(input, "#"))
 }
