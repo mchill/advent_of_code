@@ -19,6 +19,25 @@ type State struct {
 	ifTrue  Action
 }
 
+func parseAction(scanner *bufio.Scanner) Action {
+	action := Action{}
+
+	scanner.Scan()
+	scanner.Scan()
+	action.write = int(strings.Split(scanner.Text(), " ")[8][0] - '0')
+
+	scanner.Scan()
+	action.move = 1
+	if strings.Split(scanner.Text(), " ")[10] == "left." {
+		action.move = -1
+	}
+
+	scanner.Scan()
+	action.next = strings.Split(scanner.Text(), " ")[8][0]
+
+	return action
+}
+
 func main() {
 	file, err := os.Open("input.txt")
 	if err != nil {
@@ -35,41 +54,12 @@ func main() {
 	steps, _ := strconv.Atoi(strings.Split(scanner.Text(), " ")[5])
 
 	for scanner.Scan() {
-		ifFalse := Action{}
-		ifTrue := Action{}
-
 		scanner.Scan()
 		thisState := strings.Split(scanner.Text(), " ")[2][0]
 
-		scanner.Scan()
-		scanner.Scan()
-		ifFalse.write = int(strings.Split(scanner.Text(), " ")[8][0] - '0')
-
-		scanner.Scan()
-		ifFalse.move = 1
-		if strings.Split(scanner.Text(), " ")[10] == "left." {
-			ifFalse.move = -1
-		}
-
-		scanner.Scan()
-		ifFalse.next = strings.Split(scanner.Text(), " ")[8][0]
-
-		scanner.Scan()
-		scanner.Scan()
-		ifTrue.write = int(strings.Split(scanner.Text(), " ")[8][0] - '0')
-
-		scanner.Scan()
-		ifTrue.move = 1
-		if strings.Split(scanner.Text(), " ")[10] == "left." {
-			ifTrue.move = -1
-		}
-
-		scanner.Scan()
-		ifTrue.next = strings.Split(scanner.Text(), " ")[8][0]
-
 		states[thisState] = State{
-			ifFalse: ifFalse,
-			ifTrue:  ifTrue,
+			ifFalse: parseAction(scanner),
+			ifTrue:  parseAction(scanner),
 		}
 	}
 
